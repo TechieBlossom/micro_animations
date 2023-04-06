@@ -21,9 +21,12 @@ class HomeScreen extends StatelessWidget {
                   builder: (_) => const ShowcaseScreen(
                     title: 'OneFootball Team Win Pie',
                     child: NPieChart(
+                      radius: 100,
                       win: 10,
                       draw: 5,
                       loss: 5,
+                      textSize: 20,
+                      strokeWidth: 8,
                     ),
                   ),
                 ),

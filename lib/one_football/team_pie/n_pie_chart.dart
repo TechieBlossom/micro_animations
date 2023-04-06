@@ -8,12 +8,16 @@ class NPieChart extends StatefulWidget {
     this.win = 18,
     this.draw = 3,
     this.loss = 2,
+    this.textSize = 20,
+    this.strokeWidth = 5,
   });
 
   final double radius;
   final int win;
   final int draw;
   final int loss;
+  final double textSize;
+  final double strokeWidth;
 
   @override
   State<NPieChart> createState() => _NPieChartState();
@@ -67,6 +71,7 @@ class _NPieChartState extends State<NPieChart>
               winProgress: _win.value,
               drawProgress: _draw.value,
               lossProgress: _loss.value,
+              strokeWidth: widget.strokeWidth,
             ),
             child: child,
           );
@@ -75,9 +80,21 @@ class _NPieChartState extends State<NPieChart>
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           mainAxisSize: MainAxisSize.max,
           children: [
-            VerticalStat('W', widget.win.toString()),
-            VerticalStat('D', widget.draw.toString()),
-            VerticalStat('L', widget.loss.toString()),
+            VerticalStat(
+              'W',
+              widget.win.toString(),
+              textSize: widget.textSize,
+            ),
+            VerticalStat(
+              'D',
+              widget.draw.toString(),
+              textSize: widget.textSize,
+            ),
+            VerticalStat(
+              'L',
+              widget.loss.toString(),
+              textSize: widget.textSize,
+            ),
           ],
         ),
       ),
@@ -86,18 +103,28 @@ class _NPieChartState extends State<NPieChart>
 }
 
 class VerticalStat extends StatelessWidget {
-  const VerticalStat(this.label, this.value, {super.key});
+  const VerticalStat(
+    this.label,
+    this.value, {
+    super.key,
+    required this.textSize,
+  });
 
   final String label;
   final String value;
+  final double textSize;
 
   @override
   Widget build(BuildContext context) {
+    final labelStyle =
+        Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: textSize);
+    final valueStyle =
+        Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: textSize);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: Theme.of(context).textTheme.titleMedium),
-        Text(value, style: Theme.of(context).textTheme.bodySmall),
+        Text(label, style: labelStyle),
+        Text(value, style: valueStyle),
       ],
     );
   }
@@ -107,11 +134,13 @@ class _ProgressPainter extends CustomPainter {
   double winProgress;
   double drawProgress;
   double lossProgress;
+  double strokeWidth;
 
   _ProgressPainter({
     required this.winProgress,
     required this.drawProgress,
     required this.lossProgress,
+    required this.strokeWidth,
   });
 
   @override
@@ -122,19 +151,19 @@ class _ProgressPainter extends CustomPainter {
       ..color = Colors.black
       ..strokeCap = StrokeCap.butt
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 8.0;
+      ..strokeWidth = strokeWidth;
 
     Paint drawPaint = Paint()
-      ..color = Colors.black26
+      ..color = Colors.black38
       ..strokeCap = StrokeCap.butt
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 8.0;
+      ..strokeWidth = strokeWidth;
 
     Paint lossPaint = Paint()
       ..color = Colors.black26
       ..strokeCap = StrokeCap.butt
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 8.0;
+      ..strokeWidth = strokeWidth;
 
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: size.width / 2),
