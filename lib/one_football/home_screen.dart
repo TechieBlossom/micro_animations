@@ -20,7 +20,11 @@ class HomeScreen extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) => const ShowcaseScreen(
                     title: 'OneFootball Team Win Pie',
-                    child: NPieChart(),
+                    child: NPieChart(
+                      win: 10,
+                      draw: 5,
+                      loss: 5,
+                    ),
                   ),
                 ),
               );

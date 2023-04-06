@@ -19,18 +19,57 @@ class NPieChart extends StatefulWidget {
   State<NPieChart> createState() => _NPieChartState();
 }
 
-class _NPieChartState extends State<NPieChart> {
+class _NPieChartState extends State<NPieChart>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _win;
+  late Animation<double> _draw;
+  late Animation<double> _loss;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+
+    double total = (widget.win + widget.draw + widget.loss) * (1 / 360);
+
+    final CurvedAnimation curvedAnimation =
+        CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+
+    _win = Tween<double>(
+      begin: 0,
+      end: widget.win / total,
+    ).animate(curvedAnimation);
+    _draw = Tween<double>(
+      begin: 0,
+      end: (widget.win + widget.draw) / total,
+    ).animate(curvedAnimation);
+    _loss = Tween<double>(
+      begin: 0,
+      end: (widget.win + widget.draw + widget.loss) / total,
+    ).animate(curvedAnimation);
+
+    _controller.forward();
+  }
+
   @override
   Widget build(BuildContext context) {
-    double total = (widget.win + widget.draw + widget.loss) * (1 / 360);
     return SizedBox.fromSize(
       size: Size.fromRadius(widget.radius),
-      child: CustomPaint(
-        painter: _ProgressPainter(
-          winProgress: widget.win / total,
-          drawProgress: (widget.win + widget.draw) / total,
-          lossProgress: (widget.win + widget.draw + widget.loss) / total,
-        ),
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          return CustomPaint(
+            painter: _ProgressPainter(
+              winProgress: _win.value,
+              drawProgress: _draw.value,
+              lossProgress: _loss.value,
+            ),
+          );
+        },
       ),
     );
   }
