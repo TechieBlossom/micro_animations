@@ -61,16 +61,44 @@ class _NPieChartState extends State<NPieChart>
       size: Size.fromRadius(widget.radius),
       child: AnimatedBuilder(
         animation: _controller,
-        builder: (context, _) {
+        builder: (context, child) {
           return CustomPaint(
             painter: _ProgressPainter(
               winProgress: _win.value,
               drawProgress: _draw.value,
               lossProgress: _loss.value,
             ),
+            child: child,
           );
         },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            VerticalStat('W', widget.win.toString()),
+            VerticalStat('D', widget.draw.toString()),
+            VerticalStat('L', widget.loss.toString()),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class VerticalStat extends StatelessWidget {
+  const VerticalStat(this.label, this.value, {super.key});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.titleMedium),
+        Text(value, style: Theme.of(context).textTheme.bodySmall),
+      ],
     );
   }
 }
