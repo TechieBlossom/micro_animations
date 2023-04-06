@@ -7,23 +7,28 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        ListTile(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const ShowcaseScreen(
-                  title: 'OneFootball Team Win Pie',
-                  child: NPieChart(),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Micro Animations'),
+      ),
+      body: ListView(
+        children: [
+          ListTile(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ShowcaseScreen(
+                    title: 'OneFootball Team Win Pie',
+                    child: NPieChart(),
+                  ),
                 ),
-              ),
-            );
-          },
-          title: const Text('OneFootball Team Win Pie'),
-        ),
-      ],
+              );
+            },
+            title: const Text('OneFootball Team Win Pie'),
+          ),
+        ],
+      ),
     );
   }
 }
