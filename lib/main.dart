@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:micro_animations/one_football/home_screen.dart';
+import 'package:micro_animations/home_screen.dart';
 
 void main() {
   runApp(const MicroAnimationsApp());

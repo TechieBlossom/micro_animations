@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:micro_animations/distributed_graph_ui/distributed_graph_screen.dart';
 import 'package:micro_animations/one_football/showcase_screen.dart';
-import 'package:micro_animations/one_football/team_pie/n_pie_chart.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,21 +18,22 @@ class HomeScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const ShowcaseScreen(
-                    title: 'OneFootball Team Win Pie',
-                    child: NPieChart(
-                      radius: 100,
-                      win: 10,
-                      draw: 5,
-                      loss: 5,
-                      textSize: 20,
-                      strokeWidth: 8,
-                    ),
-                  ),
+                  builder: (_) => const ShowcaseScreen(),
                 ),
               );
             },
             title: const Text('OneFootball Team Win Pie'),
+          ),
+          ListTile(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const DistributedGraphScreen(),
+                ),
+              );
+            },
+            title: const Text('Distributed Graph'),
           ),
         ],
       ),
