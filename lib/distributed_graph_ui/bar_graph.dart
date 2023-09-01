@@ -1,62 +1,81 @@
 import 'package:flutter/material.dart';
 import 'package:micro_animations/distributed_graph_ui/dataset.dart';
-
-const levels = 8;
+import 'package:micro_animations/distributed_graph_ui/label.dart';
+import 'package:micro_animations/distributed_graph_ui/overlay_mixin.dart';
 
 class BarGraph extends StatelessWidget {
-  const BarGraph({super.key, required this.dataset});
+  const BarGraph({
+    super.key,
+    required this.dataset,
+    this.isBasic = true,
+  });
 
   final List<Data> dataset;
+  final bool isBasic;
 
   List<double> get amounts => dataset
       .map((data) => data.medical + data.food + data.travel + data.others)
       .toList();
 
+  double get maxAmount => amounts.reduce((a, b) => a > b ? a : b);
+
+  double get scale => maxAmount / 10;
+
+  List<String> get horizontalLabels =>
+      dataset.map((data) => data.monthName).toList();
+
   @override
   Widget build(BuildContext context) {
-    final sortedAmounts = amounts;
-    sortedAmounts.sort((a, b) => b.compareTo(a));
+    return Column(
+      children: [
+        SizedBox(
+          height: 340,
+          child: Row(
+            key: key,
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ...List.generate(
+                horizontalLabels.length,
+                (index) {
+                  final foodHeight = (dataset[index].food / maxAmount) * 300;
+                  final medicalHeight =
+                      (dataset[index].medical / maxAmount) * 300;
+                  final travelHeight =
+                      (dataset[index].travel / maxAmount) * 300;
+                  final othersHeight =
+                      (dataset[index].others / maxAmount) * 300;
 
-    final maxAmount = sortedAmounts.first;
-    const scale = 200;
-    final maxLevelAmount = maxAmount + scale;
-
-    final horizontalLabels = dataset.map((data) => data.monthName).toList();
-
-    return SizedBox(
-      height: 300,
-      child: Row(
-        key: key,
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: List.generate(
-          horizontalLabels.length,
-          (index) {
-            final foodHeight = (dataset[index].food / maxLevelAmount) * scale;
-            final medicalHeight =
-                (dataset[index].medical / maxLevelAmount) * scale;
-            final travelHeight =
-                (dataset[index].travel / maxLevelAmount) * scale;
-            final othersHeight =
-                (dataset[index].others / maxLevelAmount) * scale;
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              verticalDirection: VerticalDirection.up,
-              children: [
-                _Label(label: horizontalLabels[index]),
-                _Bar(
-                  foodHeight: foodHeight,
-                  medicalHeight: medicalHeight,
-                  travelHeight: travelHeight,
-                  othersHeight: othersHeight,
-                ),
-              ],
-            );
-          },
-        ).toList(),
-      ),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    verticalDirection: VerticalDirection.up,
+                    children: [
+                      SizedBox(
+                        height: 40,
+                        child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Label(label: horizontalLabels[index])),
+                      ),
+                      _Bar(
+                        isBasic: isBasic,
+                        foodHeight: foodHeight,
+                        medicalHeight: medicalHeight,
+                        travelHeight: travelHeight,
+                        othersHeight: othersHeight,
+                        foodInfo: dataset[index].food.toString(),
+                        medicalInfo: dataset[index].medical.toString(),
+                        travelInfo: dataset[index].travel.toString(),
+                        othersInfo: dataset[index].others.toString(),
+                      ),
+                    ],
+                  );
+                },
+              ).toList()
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -67,18 +86,29 @@ class _Bar extends StatefulWidget {
     required this.medicalHeight,
     required this.travelHeight,
     required this.othersHeight,
+    required this.foodInfo,
+    required this.medicalInfo,
+    required this.travelInfo,
+    required this.othersInfo,
+    required this.isBasic,
   });
 
   final double foodHeight;
   final double medicalHeight;
   final double travelHeight;
   final double othersHeight;
+  final String foodInfo;
+  final String medicalInfo;
+  final String travelInfo;
+  final String othersInfo;
+  final bool isBasic;
 
   @override
   State<_Bar> createState() => _BarState();
 }
 
-class _BarState extends State<_Bar> with SingleTickerProviderStateMixin {
+class _BarState extends State<_Bar>
+    with SingleTickerProviderStateMixin, OverlayStateMixin {
   late AnimationController _controller;
   late Animation<double> _foodAnimation;
   late Animation<double> _medicalAnimation;
@@ -88,102 +118,195 @@ class _BarState extends State<_Bar> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    final total = widget.foodHeight +
+        widget.travelHeight +
+        widget.medicalHeight +
+        widget.othersHeight;
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 5),
+      duration: const Duration(seconds: 4),
     );
-    _foodAnimation = Tween<double>(begin: 0, end: widget.foodHeight).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.25),
-      ),
-    );
-    _medicalAnimation =
-        Tween<double>(begin: 0, end: widget.medicalHeight).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.25, 0.5),
-      ),
-    );
-    _travelAnimation =
-        Tween<double>(begin: 0, end: widget.travelHeight).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.5, 0.75),
-      ),
-    );
-    _othersAnimation =
-        Tween<double>(begin: 0, end: widget.othersHeight).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.75, 1.0),
-      ),
-    );
-
-    _controller.forward();
+    if (widget.isBasic) {
+      _foodAnimation = Tween<double>(begin: 0, end: widget.foodHeight).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Interval(0.0, widget.foodHeight / total),
+        ),
+      );
+      _medicalAnimation =
+          Tween<double>(begin: 0, end: widget.medicalHeight).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Interval(
+            widget.foodHeight / total,
+            (widget.foodHeight + widget.medicalHeight) / total,
+          ),
+        ),
+      );
+      _travelAnimation =
+          Tween<double>(begin: 0, end: widget.travelHeight).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Interval(
+            (widget.foodHeight + widget.medicalHeight) / total,
+            (widget.foodHeight + widget.medicalHeight + widget.travelHeight) /
+                total,
+          ),
+        ),
+      );
+      _othersAnimation =
+          Tween<double>(begin: 0, end: widget.othersHeight).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Interval(
+            (widget.foodHeight + widget.medicalHeight + widget.travelHeight) /
+                total,
+            1.0,
+          ),
+        ),
+      );
+    } else {
+      _foodAnimation = Tween<double>(begin: 0, end: widget.foodHeight).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(0.0, 0.25),
+        ),
+      );
+      _medicalAnimation =
+          Tween<double>(begin: 0, end: widget.medicalHeight).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(
+            0.25,
+            0.5,
+          ),
+        ),
+      );
+      _travelAnimation =
+          Tween<double>(begin: 0, end: widget.travelHeight).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(
+            0.5,
+            0.75,
+          ),
+        ),
+      );
+      _othersAnimation =
+          Tween<double>(begin: 0, end: widget.othersHeight).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: const Interval(
+            0.75,
+            1.0,
+          ),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Column(
-          verticalDirection: VerticalDirection.up,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.green,
-              ),
-              width: 10,
-              height: _foodAnimation.value,
-            ),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.orange,
-              ),
-              width: 10,
-              height: _medicalAnimation.value,
-            ),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.indigo,
-              ),
-              width: 10,
-              height: _travelAnimation.value,
-            ),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.cyanAccent,
-              ),
-              width: 10,
-              height: _othersAnimation.value,
-            ),
-          ],
+    return FutureBuilder(
+      future: Future.delayed(
+        const Duration(seconds: 2),
+        () => _controller.forward(),
+      ),
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        return AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Column(
+              verticalDirection: VerticalDirection.up,
+              children: [
+                _Stick(
+                  color: const Color(0xFFE2E2E3),
+                  info: widget.foodInfo,
+                  value: _foodAnimation.value,
+                ),
+                _Stick(
+                  color: const Color(0xFFC392DC),
+                  info: widget.medicalInfo,
+                  value: _medicalAnimation.value,
+                ),
+                _Stick(
+                  color: const Color(0xFFFEBA17),
+                  info: widget.travelInfo,
+                  value: _travelAnimation.value,
+                ),
+                _Stick(
+                  color: const Color(0xFFCB9D9D),
+                  info: widget.othersInfo,
+                  value: _othersAnimation.value,
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
 }
 
-class _Label extends StatelessWidget {
-  const _Label({required this.label});
+class _Stick extends StatefulWidget {
+  const _Stick({
+    required this.value,
+    required this.info,
+    required this.color,
+  });
 
-  final String label;
+  final double value;
+  final String info;
+  final Color color;
 
   @override
+  State<_Stick> createState() => _StickState();
+}
+
+class _StickState extends State<_Stick> with OverlayStateMixin {
+  @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.labelMedium?.copyWith(
-          fontFamily: 'din-pro',
-        );
-    return Text(
-      label,
-      style: style,
-      textAlign: TextAlign.right,
+    return TapRegion(
+      onTapOutside: (_) => removeOverlay(),
+      child: GestureDetector(
+        onTapDown: (details) => _onTapDown(details, context),
+        child: Container(
+          height: widget.value,
+          width: 30,
+          decoration: BoxDecoration(
+            color: widget.color,
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onTapDown(TapDownDetails details, BuildContext context) {
+    late Offset offset;
+    final width = MediaQuery.sizeOf(context).width;
+    if (details.globalPosition > Offset(width - 60, 0)) {
+      offset = details.globalPosition - const Offset(50, 0);
+    } else {
+      offset = details.globalPosition;
+    }
+    toggleOverlay(
+      Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          border: Border.all(color: widget.color, width: 4),
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+        ),
+        child: Text(
+          widget.info,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: Colors.black),
+        ),
+      ),
+      offset,
     );
   }
 }

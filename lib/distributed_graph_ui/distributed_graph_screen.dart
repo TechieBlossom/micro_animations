@@ -7,15 +7,71 @@ class DistributedGraphScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iOS = Theme.of(context).platform == TargetPlatform.iOS;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Distributed Graph'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: BarGraph(dataset: dataset),
+        padding: const EdgeInsets.all(64.0),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(child: BarGraph(dataset: dataset)),
+              const SizedBox(width: 64),
+              Expanded(child: BarGraph(dataset: dataset, isBasic: false)),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+}
+
+// const Padding(
+// padding: EdgeInsets.only(top: 24.0),
+// child: Legends(),
+// ),
+
+class Legends extends StatelessWidget {
+  const Legends({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        Legend(label: 'FOOD', color: Colors.green),
+        Legend(label: 'MEDICAL', color: Colors.redAccent),
+        Legend(label: 'TRAVEL', color: Colors.indigoAccent),
+        Legend(label: 'OTHERS', color: Colors.blueGrey),
+      ],
+    );
+  }
+}
+
+class Legend extends StatelessWidget {
+  const Legend({super.key, required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 8,
+          width: 20,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        Text(label),
+      ],
     );
   }
 }
