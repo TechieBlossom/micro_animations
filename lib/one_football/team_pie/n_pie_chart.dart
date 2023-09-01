@@ -10,6 +10,7 @@ class NPieChart extends StatefulWidget {
     this.loss = 2,
     this.textSize = 20,
     this.strokeWidth = 5,
+    this.scale = 1,
   });
 
   final double radius;
@@ -18,6 +19,7 @@ class NPieChart extends StatefulWidget {
   final int loss;
   final double textSize;
   final double strokeWidth;
+  final double scale;
 
   @override
   State<NPieChart> createState() => _NPieChartState();
@@ -32,17 +34,15 @@ class _NPieChartState extends State<NPieChart>
 
   @override
   void initState() {
-    super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 4),
     );
 
-    double total = (widget.win + widget.draw + widget.loss) * (1 / 360);
+    final curvedAnimation =
+        CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn);
 
-    final CurvedAnimation curvedAnimation =
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-
+    final total = (widget.win + widget.draw + widget.loss) / 360;
     _win = Tween<double>(
       begin: 0,
       end: widget.win / total,
@@ -60,88 +60,69 @@ class _NPieChartState extends State<NPieChart>
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox.fromSize(
-      size: Size.fromRadius(widget.radius),
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: _ProgressPainter(
-              winProgress: _win.value,
-              drawProgress: _draw.value,
-              lossProgress: _loss.value,
-              strokeWidth: widget.strokeWidth,
-            ),
-            child: child,
-          );
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            VerticalStat(
-              'W',
-              widget.win.toString(),
-              textSize: widget.textSize,
-            ),
-            VerticalStat(
-              'D',
-              widget.draw.toString(),
-              textSize: widget.textSize,
-            ),
-            VerticalStat(
-              'L',
-              widget.loss.toString(),
-              textSize: widget.textSize,
-            ),
-          ],
+    return Transform.scale(
+      scale: widget.scale,
+      child: SizedBox.fromSize(
+        size: Size.fromRadius(widget.radius),
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return CustomPaint(
+              painter: _ProgressPainter(
+                strokeWidth: widget.strokeWidth,
+                winProgress: _win.value,
+                drawProgress: _draw.value,
+                lossProgress: _loss.value,
+              ),
+              child: child,
+            );
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              VerticalStat(
+                'W',
+                widget.win.toString(),
+                textSize: widget.textSize,
+              ),
+              VerticalStat(
+                'D',
+                widget.draw.toString(),
+                textSize: widget.textSize,
+              ),
+              VerticalStat(
+                'L',
+                widget.loss.toString(),
+                textSize: widget.textSize,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class VerticalStat extends StatelessWidget {
-  const VerticalStat(
-    this.label,
-    this.value, {
-    super.key,
-    required this.textSize,
-  });
-
-  final String label;
-  final String value;
-  final double textSize;
-
-  @override
-  Widget build(BuildContext context) {
-    final labelStyle =
-        Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: textSize);
-    final valueStyle =
-        Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: textSize);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(label, style: labelStyle),
-        Text(value, style: valueStyle),
-      ],
-    );
-  }
-}
-
 class _ProgressPainter extends CustomPainter {
-  double winProgress;
-  double drawProgress;
-  double lossProgress;
-  double strokeWidth;
-
-  _ProgressPainter({
+  const _ProgressPainter({
+    required this.strokeWidth,
     required this.winProgress,
     required this.drawProgress,
     required this.lossProgress,
-    required this.strokeWidth,
   });
+
+  final double strokeWidth;
+  final double winProgress;
+  final double drawProgress;
+  final double lossProgress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -172,7 +153,6 @@ class _ProgressPainter extends CustomPainter {
       false,
       winPaint,
     );
-
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: size.width / 2),
       math.radians(-90),
@@ -180,7 +160,6 @@ class _ProgressPainter extends CustomPainter {
       false,
       drawPaint,
     );
-
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: size.width / 2),
       math.radians(-90),
@@ -193,5 +172,33 @@ class _ProgressPainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
+  }
+}
+
+class VerticalStat extends StatelessWidget {
+  const VerticalStat(
+    this.label,
+    this.value, {
+    super.key,
+    required this.textSize,
+  });
+
+  final String label;
+  final String value;
+  final double textSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final labelStyle =
+        Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: textSize);
+    final valueStyle =
+        Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: textSize);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label, style: labelStyle),
+        Text(value, style: valueStyle),
+      ],
+    );
   }
 }
