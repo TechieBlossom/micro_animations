@@ -7,7 +7,7 @@ class Label extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.titleLarge?.copyWith(
+    final style = Theme.of(context).textTheme.labelMedium?.copyWith(
           fontFamily: 'din-pro',
         );
     return Text(

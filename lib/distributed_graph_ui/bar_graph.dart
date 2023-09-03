@@ -26,56 +26,47 @@ class BarGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: 340,
-          child: Row(
-            key: key,
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ...List.generate(
-                horizontalLabels.length,
-                (index) {
-                  final foodHeight = (dataset[index].food / maxAmount) * 300;
-                  final medicalHeight =
-                      (dataset[index].medical / maxAmount) * 300;
-                  final travelHeight =
-                      (dataset[index].travel / maxAmount) * 300;
-                  final othersHeight =
-                      (dataset[index].others / maxAmount) * 300;
+    return SizedBox(
+      height: 340,
+      child: Row(
+        key: key,
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...List.generate(
+            horizontalLabels.length,
+            (index) {
+              final foodHeight = (dataset[index].food / maxAmount) * 300;
+              final medicalHeight = (dataset[index].medical / maxAmount) * 300;
+              final travelHeight = (dataset[index].travel / maxAmount) * 300;
+              final othersHeight = (dataset[index].others / maxAmount) * 300;
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    verticalDirection: VerticalDirection.up,
-                    children: [
-                      SizedBox(
-                        height: 40,
-                        child: Align(
-                            alignment: Alignment.bottomCenter,
-                            child: Label(label: horizontalLabels[index])),
-                      ),
-                      _Bar(
-                        isBasic: isBasic,
-                        foodHeight: foodHeight,
-                        medicalHeight: medicalHeight,
-                        travelHeight: travelHeight,
-                        othersHeight: othersHeight,
-                        foodInfo: dataset[index].food.toString(),
-                        medicalInfo: dataset[index].medical.toString(),
-                        travelInfo: dataset[index].travel.toString(),
-                        othersInfo: dataset[index].others.toString(),
-                      ),
-                    ],
-                  );
-                },
-              ).toList()
-            ],
-          ),
-        ),
-      ],
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                verticalDirection: VerticalDirection.up,
+                children: [
+                  Label(label: horizontalLabels[index]),
+                  SizedBox(
+                    height: 300,
+                    child: _Bar(
+                      isBasic: isBasic,
+                      foodHeight: foodHeight,
+                      medicalHeight: medicalHeight,
+                      travelHeight: travelHeight,
+                      othersHeight: othersHeight,
+                      foodInfo: dataset[index].food.toString(),
+                      medicalInfo: dataset[index].medical.toString(),
+                      travelInfo: dataset[index].travel.toString(),
+                      othersInfo: dataset[index].others.toString(),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ).toList()
+        ],
+      ),
     );
   }
 }
@@ -107,8 +98,7 @@ class _Bar extends StatefulWidget {
   State<_Bar> createState() => _BarState();
 }
 
-class _BarState extends State<_Bar>
-    with SingleTickerProviderStateMixin, OverlayStateMixin {
+class _BarState extends State<_Bar> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _foodAnimation;
   late Animation<double> _medicalAnimation;
@@ -272,10 +262,10 @@ class _StickState extends State<_Stick> with OverlayStateMixin {
         onTapDown: (details) => _onTapDown(details, context),
         child: Container(
           height: widget.value,
-          width: 30,
+          width: 16,
           decoration: BoxDecoration(
             color: widget.color,
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(8),
           ),
         ),
       ),
@@ -291,22 +281,34 @@ class _StickState extends State<_Stick> with OverlayStateMixin {
       offset = details.globalPosition;
     }
     toggleOverlay(
-      Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          border: Border.all(color: widget.color, width: 4),
-          borderRadius: BorderRadius.circular(8),
-          color: Colors.white,
-        ),
-        child: Text(
-          widget.info,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: Colors.black),
-        ),
-      ),
+      OverlayUI(borderColor: widget.color, info: widget.info),
       offset,
+    );
+  }
+}
+
+class OverlayUI extends StatelessWidget {
+  const OverlayUI({super.key, required this.borderColor, required this.info});
+
+  final Color borderColor;
+  final String info;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        border: Border.all(color: borderColor, width: 4),
+        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+      ),
+      child: Text(
+        info,
+        style: Theme.of(context)
+            .textTheme
+            .bodyMedium
+            ?.copyWith(color: Colors.black),
+      ),
     );
   }
 }

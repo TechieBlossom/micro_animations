@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 mixin OverlayStateMixin<T extends StatefulWidget> on State<T> {
   OverlayEntry? _overlayEntry;
 
-  bool get isOverlayShown => _overlayEntry != null;
+  bool get _isOverlayShown => _overlayEntry != null;
 
   void removeOverlay() {
     _overlayEntry?.remove();
@@ -28,7 +28,7 @@ mixin OverlayStateMixin<T extends StatefulWidget> on State<T> {
   }
 
   void toggleOverlay(Widget child, Offset? offset) =>
-      isOverlayShown ? removeOverlay() : _insertOverlay(child, offset);
+      _isOverlayShown ? removeOverlay() : _insertOverlay(child, offset);
 
   @override
   void dispose() {

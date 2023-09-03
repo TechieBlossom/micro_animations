@@ -12,17 +12,8 @@ class DistributedGraphScreen extends StatelessWidget {
         title: const Text('Distributed Graph'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(64.0),
-        child: Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Expanded(child: BarGraph(dataset: dataset)),
-              const SizedBox(width: 64),
-              Expanded(child: BarGraph(dataset: dataset, isBasic: false)),
-            ],
-          ),
-        ),
+        padding: const EdgeInsets.all(32.0),
+        child: BarGraph(dataset: dataset, isBasic: false),
       ),
     );
   }
