@@ -193,45 +193,39 @@ class _BarState extends State<_Bar> with SingleTickerProviderStateMixin {
         ),
       );
     }
+
+    _controller.forward();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: Future.delayed(
-        const Duration(seconds: 2),
-        () => _controller.forward(),
-      ),
-      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-        return AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return Column(
-              verticalDirection: VerticalDirection.up,
-              children: [
-                _Stick(
-                  color: const Color(0xFFE2E2E3),
-                  info: widget.foodInfo,
-                  value: _foodAnimation.value,
-                ),
-                _Stick(
-                  color: const Color(0xFFC392DC),
-                  info: widget.medicalInfo,
-                  value: _medicalAnimation.value,
-                ),
-                _Stick(
-                  color: const Color(0xFFFEBA17),
-                  info: widget.travelInfo,
-                  value: _travelAnimation.value,
-                ),
-                _Stick(
-                  color: const Color(0xFFCB9D9D),
-                  info: widget.othersInfo,
-                  value: _othersAnimation.value,
-                ),
-              ],
-            );
-          },
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Column(
+          verticalDirection: VerticalDirection.up,
+          children: [
+            _Stick(
+              color: const Color(0xFFE2E2E3),
+              info: widget.foodInfo,
+              value: _foodAnimation.value,
+            ),
+            _Stick(
+              color: const Color(0xFFC392DC),
+              info: widget.medicalInfo,
+              value: _medicalAnimation.value,
+            ),
+            _Stick(
+              color: const Color(0xFFFEBA17),
+              info: widget.travelInfo,
+              value: _travelAnimation.value,
+            ),
+            _Stick(
+              color: const Color(0xFFCB9D9D),
+              info: widget.othersInfo,
+              value: _othersAnimation.value,
+            ),
+          ],
         );
       },
     );
@@ -246,8 +240,8 @@ class _Stick extends StatefulWidget {
   });
 
   final double value;
-  final String info;
   final Color color;
+  final String info;
 
   @override
   State<_Stick> createState() => _StickState();
@@ -281,7 +275,10 @@ class _StickState extends State<_Stick> with OverlayStateMixin {
       offset = details.globalPosition;
     }
     toggleOverlay(
-      OverlayUI(borderColor: widget.color, info: widget.info),
+      OverlayUI(
+        info: widget.info,
+        borderColor: widget.color,
+      ),
       offset,
     );
   }

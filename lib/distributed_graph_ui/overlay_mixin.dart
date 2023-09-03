@@ -5,9 +5,20 @@ mixin OverlayStateMixin<T extends StatefulWidget> on State<T> {
 
   bool get _isOverlayShown => _overlayEntry != null;
 
+  void toggleOverlay(Widget child, Offset? offset) =>
+      _isOverlayShown ? removeOverlay() : _insertOverlay(child, offset);
+
   void removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
+  }
+
+  void _insertOverlay(Widget child, Offset? offset) {
+    _overlayEntry = OverlayEntry(
+      builder: (_) => _dismissibleOverlay(child, offset),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
   }
 
   Widget _dismissibleOverlay(Widget child, Offset? offset) => Positioned(
@@ -18,17 +29,6 @@ mixin OverlayStateMixin<T extends StatefulWidget> on State<T> {
           child: child,
         ),
       );
-
-  void _insertOverlay(Widget child, Offset? offset) {
-    _overlayEntry = OverlayEntry(
-      builder: (_) => _dismissibleOverlay(child, offset),
-    );
-
-    Overlay.of(context).insert(_overlayEntry!);
-  }
-
-  void toggleOverlay(Widget child, Offset? offset) =>
-      _isOverlayShown ? removeOverlay() : _insertOverlay(child, offset);
 
   @override
   void dispose() {
