@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:micro_animations/distributed_graph_ui/dataset.dart';
 import 'package:micro_animations/distributed_graph_ui/label.dart';
 import 'package:micro_animations/distributed_graph_ui/overlay_mixin.dart';
+import 'package:micro_animations/overlay_ui.dart';
 
 class BarGraph extends StatelessWidget {
   const BarGraph({
@@ -280,32 +281,6 @@ class _StickState extends State<_Stick> with OverlayStateMixin {
         borderColor: widget.color,
       ),
       offset,
-    );
-  }
-}
-
-class OverlayUI extends StatelessWidget {
-  const OverlayUI({super.key, required this.borderColor, required this.info});
-
-  final Color borderColor;
-  final String info;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        border: Border.all(color: borderColor, width: 4),
-        borderRadius: BorderRadius.circular(8),
-        color: Colors.white,
-      ),
-      child: Text(
-        info,
-        style: Theme.of(context)
-            .textTheme
-            .bodyMedium
-            ?.copyWith(color: Colors.black),
-      ),
     );
   }
 }

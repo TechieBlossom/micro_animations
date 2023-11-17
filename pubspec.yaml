@@ -32,6 +32,7 @@ dependencies:
   flutter:
     sdk: flutter
   vector_math: ^2.1.4
+  touchable: ^1.0.2
 
 
   # The following adds the Cupertino Icons font to your application.

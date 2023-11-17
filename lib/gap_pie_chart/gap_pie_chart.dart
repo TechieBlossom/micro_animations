@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:micro_animations/gap_pie_chart/dataset.dart';
 import 'package:vector_math/vector_math.dart' as math;
-
-import 'dataset.dart';
 
 final pieColors = [
   Colors.black,
-  Colors.black45,
   Colors.black38,
   Colors.black26,
   Colors.black12,
@@ -14,34 +12,36 @@ final pieColors = [
 class ArcData {
   final Color color;
   final Animation<double> sweepAngle;
+  final double startAngle;
 
   ArcData({
     required this.color,
     required this.sweepAngle,
+    required this.startAngle,
   });
 }
 
-class NPieChart extends StatefulWidget {
-  const NPieChart({
+class GapPieChart extends StatefulWidget {
+  const GapPieChart({
     super.key,
     this.radius = 100,
-    this.textSize = 20,
     this.strokeWidth = 5,
     this.scale = 1,
     required this.dataset,
+    required this.gapDegrees,
   });
 
   final double radius;
-  final double textSize;
   final double strokeWidth;
   final double scale;
   final List<Data> dataset;
+  final double gapDegrees;
 
   @override
-  State<NPieChart> createState() => _NPieChartState();
+  State<GapPieChart> createState() => _GapPieChartState();
 }
 
-class _NPieChartState extends State<NPieChart>
+class _GapPieChartState extends State<GapPieChart>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late List<ArcData> arcs;
@@ -51,23 +51,33 @@ class _NPieChartState extends State<NPieChart>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 8),
+      duration: Duration(seconds: 2 * widget.dataset.length),
     );
 
-    final curvedAnimation =
-        CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn);
-
-    final total = widget.dataset.fold(0.0, (a, data) => a + data.value) / 360;
+    final remainingDegrees = 360 - (widget.dataset.length * widget.gapDegrees);
+    final total = widget.dataset.fold(0.0, (a, data) => a + data.value) /
+        remainingDegrees;
     double currentSum = 0.0;
+    final intervalGap = 1 / widget.dataset.length;
     arcs = widget.dataset.indexed.map((item) {
       final (index, data) = item;
-      currentSum += data.value;
+      final startAngle = currentSum + (index * widget.gapDegrees);
+      currentSum += data.value / total;
       return ArcData(
         color: pieColors[index],
         sweepAngle: Tween<double>(
           begin: 0,
-          end: currentSum / total,
-        ).animate(curvedAnimation),
+          end: data.value / total,
+        ).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: Interval(
+              index * intervalGap,
+              (index + 1) * intervalGap,
+            ),
+          ),
+        ),
+        startAngle: -90 + startAngle,
       );
     }).toList();
 
@@ -114,7 +124,7 @@ class _ProgressPainter extends CustomPainter {
   List<Paint> get paints => arcs.map((arc) {
         return Paint()
           ..color = arc.color
-          ..strokeCap = StrokeCap.butt
+          ..strokeCap = StrokeCap.round
           ..style = PaintingStyle.stroke
           ..strokeWidth = strokeWidth;
       }).toList();
@@ -127,7 +137,7 @@ class _ProgressPainter extends CustomPainter {
       final (index, arc) = item;
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: size.width / 2),
-        math.radians(-90),
+        math.radians(arc.startAngle),
         math.radians(arc.sweepAngle.value),
         false,
         paints[index],
@@ -138,33 +148,5 @@ class _ProgressPainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
-  }
-}
-
-class VerticalStat extends StatelessWidget {
-  const VerticalStat(
-    this.label,
-    this.value, {
-    super.key,
-    required this.textSize,
-  });
-
-  final String label;
-  final String value;
-  final double textSize;
-
-  @override
-  Widget build(BuildContext context) {
-    final labelStyle =
-        Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: textSize);
-    final valueStyle =
-        Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: textSize);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(label, style: labelStyle),
-        Text(value, style: valueStyle),
-      ],
-    );
   }
 }
